@@ -109,6 +109,84 @@ public class FoodDao {
 
 	}
 	
-	
+	public List<String> getPortionName(){
+		String sql ="SELECT distinct p.portion_display_name " + 
+				"FROM `portion` AS p " + 
+				"ORDER BY p.portion_display_name ASC ";
+		List<String> result = new ArrayList<>();	
+		try {
+			Connection conn = DBConnect.getConnection() ;
+			PreparedStatement st = conn.prepareStatement(sql) ;			
+			ResultSet res = st.executeQuery() ;
+			
+			while(res.next()) {
+				result.add(res.getString("portion_display_name"));
+			}
+			
+			conn.close();
+			return result ;
 
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null ;
+		}
+		
+	}
+	
+	public List<String> getVertici(int calorie){
+		String sql = "SELECT distinct p.portion_display_name " + 
+				"FROM `portion` AS p " + 
+				"WHERE p.calories < ? " + 
+				"ORDER BY p.portion_display_name ASC";
+		List<String> result = new ArrayList<>();
+		try {
+			Connection conn = DBConnect.getConnection() ;
+			PreparedStatement st = conn.prepareStatement(sql) ;			
+			
+			st.setDouble(1, calorie);
+			ResultSet res = st.executeQuery() ;
+			
+			while(res.next()) {
+				result.add(res.getString("portion_display_name"));
+			}
+			
+			conn.close();
+			return result ;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null ;
+		}
+	}
+
+	public List<Adiacenza> getAdiacenze(){
+		String sql = "SELECT p1.portion_display_name AS p1, p2.portion_display_name AS p2, COUNT(f.food_code) AS peso " + 
+				"FROM `portion` AS p1, `portion` AS p2, food AS f " + 
+				"WHERE p1.portion_id > p2.portion_id AND p1.portion_display_name <> p2.portion_display_name " + 
+				" AND p1.food_code = p2.food_code AND f.food_code = p1.food_code " + 
+				"GROUP BY p1.portion_display_name, p2.portion_display_name ";
+		List<Adiacenza> result = new ArrayList<>();
+		try {
+			Connection conn = DBConnect.getConnection() ;
+			PreparedStatement st = conn.prepareStatement(sql) ;		
+			ResultSet res = st.executeQuery() ;
+			
+			while(res.next()) {
+				String p1 = res.getString("p1");
+				String p2 = res.getString("p2");
+				int peso = res.getInt("peso");
+				Adiacenza a = new Adiacenza(p1, p2, peso);
+				result.add(a);
+			}
+			
+			conn.close();
+			return result ;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null ;
+		}
+		
+		
+	}
 }

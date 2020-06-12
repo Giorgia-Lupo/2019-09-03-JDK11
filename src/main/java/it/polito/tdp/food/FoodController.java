@@ -5,8 +5,10 @@
 package it.polito.tdp.food;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 import it.polito.tdp.food.model.Model;
+import it.polito.tdp.food.model.PorzioneAdiacente;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -40,7 +42,7 @@ public class FoodController {
     private Button btnCammino; // Value injected by FXMLLoader
 
     @FXML // fx:id="boxPorzioni"
-    private ComboBox<?> boxPorzioni; // Value injected by FXMLLoader
+    private ComboBox<String> boxPorzioni; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtResult"
     private TextArea txtResult; // Value injected by FXMLLoader
@@ -54,15 +56,48 @@ public class FoodController {
     @FXML
     void doCorrelate(ActionEvent event) {
     	txtResult.clear();
-    	txtResult.appendText("Cerco porzioni correlate...");
+    	txtResult.appendText("Cerco porzioni correlate...\n");
+    
+    	String tipo = this.boxPorzioni.getValue();
     	
+    	if(tipo == null) {
+    		this.txtResult.appendText("Devi selezionare un tipo! \n");
+    		return;
+    	}
+    	
+    	List<PorzioneAdiacente> adiacenti = this.model.getAdiacenti(tipo);
+    	for(PorzioneAdiacente p : adiacenti) {
+    		txtResult.appendText(String.format("%s %f\n", p.getPorzione(), p.getPeso()));
+    	}
+    	
+    	/*FATTO IO QUANDO NON AVEVO CREATO LA CLASSE DELLE PORZIONI ADIACENTI
+    	 * for(String s : this.model.getVicini(tipo)) {
+    		this.txtResult.appendText(s);
+    	} */       	
     }
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
-    	txtResult.clear();
-    	txtResult.appendText("Creazione grafo...");
+    	String num = this.txtCalorie.getText();
+    	int n = 0;
     	
+    	try {
+    		n = Integer.parseInt(num);    		
+    	}catch (NumberFormatException e) {
+    		this.txtResult.appendText("Devi inserire un numero !\n");
+    		return;
+    	}
+    	if(num == null) {
+    		this.txtResult.appendText("Devi completare il campo del numero delle calorie!\n");
+    		return;
+    	}
+    	
+    	this.model.creaGrafo(n);
+    	this.txtResult.appendText("n VERTICI: "+this.model.nVertici()+"\n");
+    	this.txtResult.appendText("n ARCHI: "+this.model.nArchi()+"\n");
+    
+    	this.boxPorzioni.getItems().clear();
+    	this.boxPorzioni.getItems().addAll(this.model.getVertici());
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
@@ -78,6 +113,6 @@ public class FoodController {
     }
     
     public void setModel(Model model) {
-    	this.model = model;
+    	this.model = model;    	
     }
 }
