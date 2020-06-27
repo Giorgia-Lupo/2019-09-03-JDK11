@@ -18,6 +18,10 @@ public class Model {
 	Graph<String, DefaultWeightedEdge> grafo;
 	List<String> vertici;
 	
+	//variabili per ricorsione:
+	private double pesoMax;
+	private List<String> camminoMax; //soluzione migliore
+	
 	public Model() {
 		dao = new FoodDao();
 	}
@@ -79,6 +83,55 @@ public class Model {
 		return v;
 	}
 	*/
+	public void cercaCammino(String partenza, int N) {
+		this.camminoMax = null;
+		this.pesoMax = 0.0;
+		
+		//deve già contenere il primo vertice da cui parto.
+		List<String> parziale = new ArrayList<>();
+		parziale.add(partenza);
+		
+		ricerca(parziale, 1, N);
+		
+	}
+	public void ricerca(List<String> parziale, int livello, int N) {
+		if(livello == N+1) {
+			double peso = pesoCammino(parziale);
+			if(peso>this.pesoMax) {
+				this.pesoMax = peso;
+				this.camminoMax = new ArrayList<>(parziale);
+			}
+			return;
+		}
+		//ricerca dei vicini
+		List<String> vicini = Graphs.neighborListOf(this.grafo, parziale.get(livello-1));
+		for(String v : vicini) {
+			if(!parziale.contains(v)) {
+				parziale.add(v);
+				ricerca(parziale, livello+1, N);
+				parziale.remove(parziale.size()-1);
+			}
+		}
+	}
+
+	private double pesoCammino(List<String> parziale) {
+		double peso = 0.0;
+		for(int i = 1; i< parziale.size(); i++) {
+			double p = this.grafo.getEdgeWeight(this.grafo.getEdge(parziale.get(i-1),
+					parziale.get(i)));
+			peso += p;
+		}
+		return peso;
+	}
+
+	public double getPesoMax() {
+		return pesoMax;
+	}
+
+	public List<String> getCamminoMax() {
+		return camminoMax;
+	}
+	
 	
 	
 }
